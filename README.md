@@ -27,70 +27,89 @@ The compiled PDF is intentionally tracked in the repository.
 
 ## Lean formalization
 
-The repository also contains a Lean 4 project with mathlib. The current scope is
-the elementary finite algebra of Poisson--binomial masses and tails, the exact tail
-objective, and the two-dimensional minimum value. The higher-dimensional comparison
-theorem, benchmark, and complete two-dimensional equality classification have not
-been formalized.
+The Lean 4 development formalizes the manuscript, including the main comparison,
+all equality cases, product total variation, endpoints, and the two-dimensional
+appendix. The
+[coverage and continuation ledger](FORMALIZATION_STATUS.md) is the authoritative
+record of theorem coverage, manuscript correspondence, and final validation;
+the module guide below gives the principal entry points.
 
 - Lean: `leanprover/lean4:v4.34.0`, pinned in `lean-toolchain`.
 - mathlib: release `v4.34.0`, pinned to commit
   `5ed2965256430c3649e86755f9576b54eca72435` in `lakefile.toml`.
-- `lake-manifest.json` locks the resolved dependency revisions.
+- `lake-manifest.json` locks all resolved dependency revisions.
 
 With [elan](https://lean-lang.org/install/) installed, run from the repository root:
 
 ```sh
-lake exe cache get Mathlib.Basic.Real.Basic \
-  Mathlib.Algebra.BigOperators.Ring.Finset \
-  Mathlib.Algebra.BigOperators.Group.Finset.Powerset \
-  Mathlib.Algebra.Order.BigOperators.Group.Finset \
-  Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset \
-  Mathlib.Order.Interval.Finset.Nat \
-  Mathlib.Algebra.BigOperators.Intervals \
-  Mathlib.Data.Finset.Lattice.Fold \
-  Mathlib.Algebra.BigOperators.Fin \
-  Mathlib.Tactic.Ring \
-  Mathlib.Tactic.Linarith
+lake exe cache get
 lake build
 ```
 
-The first command downloads compiled mathlib dependencies for the current imports.
-Elan installs the pinned Lean toolchain automatically if needed. Lake dependencies
-and build artifacts live in the ignored `.lake/` directory.
-
-`PoissonBinomialComparison/Basic.lean` defines `pbMass`, `pbTail`, `meanGap`, and
-`tailDiff` in the `PoissonBinomialComparison` namespace. A Bernoulli outcome is its
-finite set of successful coordinates; the count is the cardinality of that set.
-`bernoulliWeight` gives the product-law weight, while `pbMassOn` and `pbTailOn`
-allow any finite coordinate set, including one with a coordinate deleted.
-
-The file proves nonnegativity for parameters in `[0, 1]`, normalization, the
-tail-as-sum-of-masses formula, mass and tail recurrences, the finite-sum formula
-for the mean gap, and support and zero-threshold identities. Algebraic identities
-hold for arbitrary real parameters. Natural-number counts use successor-indexed
-recurrences, with the zero-count case stated separately. These are finite algebraic
-representations; no measure-theoretic probability spaces are constructed.
-
-`PoissonBinomialComparison/Tail.lean` proves the general tail-sum identity and its
-tail-difference version. It defines `ValidParameters`, `AdmissiblePair`, and
-`tailObjective`. In positive dimension, `tailObjective` is the exact nonempty
-finite maximum over thresholds `1, ..., n`, without adjoining zero to the set of
-values. Only dimension zero uses the separate convention `tailObjective = 0`.
-The interface proves threshold bounds, an upper-bound characterization, and
-attainment of the maximum.
-
-`PoissonBinomialComparison/TwoDimensional.lean` proves `D₁ + D₂ = Δ`, the two-tail
-maximum formula, and `twoDimensional_lower_bound`. The lower bound is algebraic
-and holds even without the admissibility assumptions. The theorem
-`complementaryPair_two_attains` shows that for every `0 ≤ Δ ≤ 2` the constant
-vectors `p_i = (1 + Δ/2)/2` and `q_i = (1 - Δ/2)/2` are admissible, have gap `Δ`,
-and attain objective `Δ/2`.
-
-`PoissonBinomialComparison.lean` is the library entry point.
-`Main.lean` is a minimal executable that imports the library.
-Both the library and executable are default build targets. To run the executable:
+The first command downloads the compiled cache for the pinned mathlib revision.
+Elan installs the pinned Lean toolchain automatically if needed. Dependencies and
+build artifacts live in the ignored `.lake/` directory. To check an individual
+module, for example:
 
 ```sh
-lake exe poisson_binomial_comparison
+lake build PoissonBinomialComparison.GlobalHomogeneity
 ```
+
+All declarations live in the `PoissonBinomialComparison` namespace. The library
+entry point is [PoissonBinomialComparison.lean](PoissonBinomialComparison.lean).
+Both the library and the small `Main.lean` executable are default build targets;
+`lake exe poisson_binomial_comparison` runs that executable. The mathematical
+validation is the Lean build, rather than the executable's informational output.
+
+### Representation
+
+A Bernoulli outcome is the finite set of successful coordinates; its count is
+that set's cardinality. `bernoulliWeight` gives the product-law weight, and
+`pbMass` is the manuscript's subset sum. `pbMassOn` and `pbTailOn` permit any
+finite coordinate set, including deletions. `productTV` is the finite sum of
+absolute differences between these outcome weights, divided by two. No
+measure-theoretic probability spaces are needed. Analytic benchmark formulas use
+mathlib's real derivatives and interval integrals.
+
+For positive dimension, `tailObjective` is exactly the nonempty maximum over
+thresholds `1, ..., n`; zero is not inserted into that maximum. Dimension zero
+has the separate convention `tailObjective = 0`. Some intermediate proofs use
+integer counts with mass zero below zero, or recursive Bernoulli convolutions;
+their equivalences with the subset-sum laws are proved. `benchmark` is the central
+switching value, with the manuscript's prescribed values at gaps zero and `n`.
+
+### Module guide
+
+- **Finite laws and base case:** `Basic`, `Tail`, `Coordinate`, `Endpoints`,
+  `Reflection`, and `Reindex` provide the algebraic foundations.
+  `TwoDimensional` proves the base inequality and attainment;
+  `TwoDimensionalEquality` gives the complete exceptional appendix classification.
+- **Bernoulli comparisons:** `LogConcavity`, `LikelihoodRatio`, `ActiveThresholds`,
+  `Adjoining`, and `HomogeneousBlockMode` establish the count-law inequalities and
+  derivative criteria. `MaximalAtom` and `DeletionMixture` supply the maximal-atom
+  and two-positive-gap bounds.
+- **Homogeneous benchmark:** `SwitchFunctions`, `SwitchDerivative`,
+  `SwitchOrdering`, `HomogeneousMinimum`, and `HomogeneousEquality` identify the
+  central switches and their exact minimizers. `BenchmarkConcavity`,
+  `BenchmarkExplicit`, and `OddSwitchParameter` cover strict concavity and the
+  explicit even, odd, and dimension-three formulas. `BenchmarkAttainment`
+  constructs pairs attaining the benchmark.
+- **Global minimizer reduction:** `DimensionImprovement`, `MinimizerReduction`,
+  `TailKKT`, `SplitPerturbation`, `LowerCoordinateClassification`, and
+  `CommonHomogeneousCoordinates` feed into `GlobalHomogeneity`. Its theorem
+  `IsGapMinimizer.homogeneous` uses comparison in the preceding dimension to
+  prove that every interior-gap global minimizer in dimension at least three is
+  a strictly interior homogeneous pair.
+- **Final comparisons:** `GlobalComparison` assembles dimension induction and
+  the tail-objective equality classification. `TotalVariation`,
+  `TotalVariationBounds`, and `TotalVariationHomogeneous` connect finite product
+  total variation with the count-tail objective. `MainTheorem` exposes both
+  sharp comparisons, simultaneous attainment, even and odd product equality
+  cases, and the endpoint classifications. Consult the ledger for the final
+  validation status.
+
+The proofs include documented equivalent alternatives to manuscript arguments:
+the two-deletion mixture is factored directly into a Bernoulli law, and the
+positive-plus-zero lower-block exclusion first adjoins variables at the original
+parameter and then increases the entire block. These alternatives preserve the
+stated conclusions and allow deterministic background parameters.

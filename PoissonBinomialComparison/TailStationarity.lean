@@ -79,13 +79,14 @@ theorem exists_supporting_tail_gradients (h : AdmissiblePair p q)
 /-- The manuscript's active randomized test exists at every constrained local
 minimum with positive gap and objective below one. Its gradient is nonnegative
 on every feasible direction; multiplier coordinates are derived separately. -/
-theorem exists_stationary_randomized_test (h : AdmissiblePair p q)
+theorem exists_stationary_randomized_test_with_activeSet (h : AdmissiblePair p q)
     (hgap : 0 < meanGap p q) (hT : tailObjective p q < 1)
     (hmin : IsLocalMinOn (fun x : (Fin n → ℝ) × (Fin n → ℝ) ↦ tailObjective x.1 x.2)
       (feasiblePairs n (meanGap p q)) (p,q)) :
     ∃ k : ℕ, ∃ w : ℝ, 1 ≤ k ∧ k ≤ n ∧ 0 ≤ w ∧ w ≤ 1 ∧
       k ∈ activeThresholds p q ∧ (w = 1 ∨ k+1 ∈ activeThresholds p q) ∧
       randomizedTail p w k-randomizedTail q w k = tailObjective p q ∧
+      ((activeThresholds p q = {k} ∧ w = 1) ∨ activeThresholds p q = {k,k+1}) ∧
       ∀ d ∈ feasibleDirections p q,
         0 ≤ ∑ i, (d.1 i*randomizedGradient p w k i-d.2 i*randomizedGradient q w k i) := by
   obtain ⟨k,hk0,hkn,hactive⟩ := activeThresholds_singleton_or_adjacent h hgap hT
@@ -94,7 +95,7 @@ theorem exists_stationary_randomized_test (h : AdmissiblePair p q)
   · have hk : k ∈ activeThresholds p q := by rw [hone]; simp
     have hsub : activeThresholds p q ⊆ {k,k} := by simp [hone]
     obtain ⟨w,_,_,hw⟩ := exists_supporting_tail_gradients h hmin hk hkr hsub
-    refine ⟨k,1,hk0,hkn,by norm_num,le_rfl,hk,Or.inl rfl,?_,?_⟩
+    refine ⟨k,1,hk0,hkn,by norm_num,le_rfl,hk,Or.inl rfl,?_,Or.inl ⟨hone,rfl⟩,?_⟩
     · simpa [randomizedDiff_eq] using (mem_activeThresholds p q k).mp hk |>.2.2
     · intro d hd
       have hv := hw d hd
@@ -105,13 +106,27 @@ theorem exists_stationary_randomized_test (h : AdmissiblePair p q)
     have hl : k+1 ∈ activeThresholds p q := by rw [htwo]; simp
     obtain ⟨w,hw0,hw1,hw⟩ := exists_supporting_tail_gradients h hmin hk
       (mem_Icc.mpr ⟨by omega,hk1⟩) (by rw [htwo])
-    refine ⟨k,w,hk0,hkn,hw0,hw1,hk,Or.inr hl,?_,?_⟩
+    refine ⟨k,w,hk0,hkn,hw0,hw1,hk,Or.inr hl,?_,Or.inr htwo,?_⟩
     · rw [randomizedDiff_eq, ((mem_activeThresholds p q k).mp hk).2.2,
         ((mem_activeThresholds p q (k+1)).mp hl).2.2]
       ring
     · intro d hd
       rw [← weighted_fderiv_tailDiff_apply p q d.1 d.2 w k]
       exact hw d hd
+
+/-- Active randomized stationarity, without exposing the exact active set. -/
+theorem exists_stationary_randomized_test (h : AdmissiblePair p q)
+    (hgap : 0 < meanGap p q) (hT : tailObjective p q < 1)
+    (hmin : IsLocalMinOn (fun x : (Fin n → ℝ) × (Fin n → ℝ) ↦ tailObjective x.1 x.2)
+      (feasiblePairs n (meanGap p q)) (p,q)) :
+    ∃ k : ℕ, ∃ w : ℝ, 1 ≤ k ∧ k ≤ n ∧ 0 ≤ w ∧ w ≤ 1 ∧
+      k ∈ activeThresholds p q ∧ (w = 1 ∨ k+1 ∈ activeThresholds p q) ∧
+      randomizedTail p w k-randomizedTail q w k = tailObjective p q ∧
+      ∀ d ∈ feasibleDirections p q,
+        0 ≤ ∑ i, (d.1 i*randomizedGradient p w k i-d.2 i*randomizedGradient q w k i) := by
+  obtain ⟨k,w,hk0,hkn,hw0,hw1,hk,hlast,hval,_,hstat⟩ :=
+    exists_stationary_randomized_test_with_activeSet h hgap hT hmin
+  exact ⟨k,w,hk0,hkn,hw0,hw1,hk,hlast,hval,hstat⟩
 
 end
 
