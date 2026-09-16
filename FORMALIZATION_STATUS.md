@@ -1,6 +1,8 @@
 # Formalization coverage and continuation ledger
 
-Source of truth: `poisson_binomial_comparison.tex` (unchanged).
+Source of truth: `poisson_binomial_comparison.tex` (mathematics unchanged).
+The user authorized one editorial provenance correction: “GPT 6 Sol” →
+“GPT-6 Astra”; the PDF was rebuilt successfully without LaTeX warnings.
 Overall status: **IN PROGRESS**. This ledger is not a claim that the main theorem
 has been proved. `PROVED` means the listed Lean declaration has compiled.
 Dependencies in the tables form the directed graph: each listed dependency has
@@ -8,8 +10,8 @@ an edge into its row. Named results are tracked separately from their components
 
 ## Current frontier
 
-- Baseline on main: `03e179a89309fc52315661661f64dfa4a2be6086`.
-- Active milestone: `formalization/order-and-optimization`.
+- Baseline on main: `a647a1778b051c37cb180dcc0ebc2e4118f56127`.
+- Active milestone: `formalization/switch-geometry-and-stationarity`.
 - Kernel-checked modules now additionally include `Coordinate`, `Endpoints`,
   `Reflection`, `TotalVariation`, `TotalVariationBounds`, `TwoDimensionalEquality`,
   `LogConcavity`, `Switch`, `Homogeneous`, `HomogeneousDerivative`,
@@ -21,18 +23,26 @@ an edge into its row. Named results are tracked separately from their components
   `Compactness`, `FixedMean`, `Deterministic`, `BinomialAtom`, `Reindex`,
   `CommonCoordinate`, `TotalVariationHomogeneous`, `SwitchIntegral`,
   `MaximalAtom`, `DeletionMixture`, and `SwitchMaximum`.
-- Current parallel targets: homogeneous-minimizer switch classification
-  (`HomogeneousMinimizer.lean`), adjoining rho-density (`SwitchRhoDensity.lean`),
-  and continuous-count switch geometry/monotonicity (`ContinuousSwitch.lean`
-  and subsequent modules). These are not yet accepted/imported.
-- Parent next target after validation: finite-dimensional stationarity foundations;
-  continuous-count ordering/concavity and dimension improvement remain major
-  dependencies before the global minimizer argument.
-- Previous milestone merged as PR #3, squash commit `03e179a89309fc52315661661f64dfa4a2be6086`.
+- Accepted current modules: `ContinuousSwitch`, `ContinuousSwitchDerivative`,
+  `ContinuousSwitchGeometry`, `SwitchRatioDerivative`, `SwitchMonotonicity`,
+  `SwitchRhoDensity`, `HomogeneousMinimizer`, `SwitchOrdering`, `HomogeneousMinimum`,
+  `BenchmarkConcavity`, `DimensionImprovement`, `GradientPositivity`,
+  `ParameterDerivative`, `ConvexStationarity`, `FeasibleDirections`,
+  `GapMultiplier`, `TailStationarity`, and `TailKKT`.
+- Seven of eight named manuscript results are now proved. The main theorem and
+  its global inhomogeneous equality classification remain unfinished.
+- Current parallel targets: explicit benchmark formulas (`BenchmarkExplicit`),
+  global minimizer boundary reductions (`DeletionObjective`, `MinimizerReduction`),
+  and one-changing-vector homogeneity (`OneVectorConstant`). These are not yet
+  accepted/imported.
+- Parent next target: common-coordinate stationarity consequences (COMMON),
+  followed by the remaining global homogeneity/equality argument. KKT and CPOS
+  are proved independently of global minimality, from relative local minimality.
+- Previous milestone merged as PR #4, squash commit `a647a1778b051c37cb180dcc0ebc2e4118f56127`.
 - No established mathematical blocker. Independent audits of the Bernoulli,
   switch, and global-minimizer prose found none; those audits are not Lean proofs.
-- Milestone validation: `lake build` exits 0, `Build completed successfully (5561 jobs).`
-  All 389 public theorem declarations have only `propext`, `Classical.choice`,
+- Milestone validation: `lake build` exits 0, `Build completed successfully (5607 jobs).`
+  All 532 public theorem declarations have only `propext`, `Classical.choice`,
   and `Quot.sound` dependencies. Source scan finds no proof placeholders or
   project-added axiom declarations.
 
@@ -44,9 +54,9 @@ an edge into its row. Named results are tracked separately from their components
 | LR | Increasing a parameter, `lem:lr`, including strict adjacent comparison and support shifts | LC, REC | `pbMass_likelihoodRatio`, `pbMass_strict_adjacent_likelihoodRatio`, `pbMass_equal_adjacent_increase`, `pbMass_adjacent_disappear`, `pbMass_adjacent_sign_preserved`; adjoining variants in `LikelihoodRatio` | PROVED |
 | ATOM | Maximal-atom bound and at-most-two-positive-gaps bound, `lem:atom` / `eq:two-gaps` | INTATOM, PADATOM, DELETEMIX | `exists_pbMass_ge_kappa` and `two_gap_lower_bound`; exact `kappa_eq_formula` and all deterministic/zero-gap cases | PROVED |
 | ADJOIN | Derivative criterion for adjoining, `cor:adjoining` | GM, ADDRULE | `homogeneousBlockMass_adjacent_le_of_deriv_nonpos`, `homogeneousBlockMass_union_le_of_deriv_nonpos`; subset-law equivalence `homogeneousBlockMass_eq_union` | PROVED |
-| SWITCH | Switch identities, `lem:switch-identities` | SWEX, SWDER, SWINT, RMON | — | TODO |
-| ORDER | Strict ordering of switches, homogeneous minimizers, strict concavity/bounds, `prop:switch-order` | SWORDER, HOMMIN, CONCAVE | — | TODO |
-| DIM | Strict dimension improvement, `lem:dimension` | RHODENS, APPEND, HOMMIN | — | TODO |
+| SWITCH | Switch identities, `lem:switch-identities` | SWEX, SWDER, SWINT, RMON | Switch existence, derivatives, normalized integrals, `continuousSwitchRatio_strictAntiOn`, `deriv_switchRatio_le` in the switch modules | PROVED |
+| ORDER | Strict ordering of switches, homogeneous minimizers, strict concavity/bounds, `prop:switch-order` | SWORDER, HOMMIN, CONCAVE | `switchValue_strict_order`, `homogeneous_minimum`, `homogeneous_minimum_eq_iff`, `strictConcaveOn_benchmark`, `benchmark_strict_bounds` | PROVED |
+| DIM | Strict dimension improvement, `lem:dimension` | RHODENS, APPEND, HOMMIN | `dimension_improvement`, including the maximal old gap endpoint | PROVED |
 | N2 | Complete two-dimensional equality families, `prop:n2-equality` | N2TAIL, N2TV, N2EQ, N2STRICT, END | `TwoDimensionalEquality` formulas, `productTV_two_eq_half_iff_family`, `twoFamily_admissible_iff`, `twoFamily_attains`, `exists_two_tail_minimizer_not_product`; endpoint theorems in `Endpoints` / `TotalVariationBounds` | PROVED |
 
 ## Definitions and elementary finite identities
@@ -74,8 +84,8 @@ Additional proved algebra/calculus interfaces:
   binomial formulas at every count, including outside support;
   `pbMass_const_eq_iff` identifies the switch equal-height equation.
 - `HomogeneousDerivative`: exact Bernstein evaluation, mass derivatives,
-  `hasDerivAt_pbTail_const_density`, and `IsSwitch.tailDiff_eq`. Maximization
-  at the tied thresholds still requires the LR step.
+  `hasDerivAt_pbTail_const_density`, and `IsSwitch.tailDiff_eq`. Exact maximization
+  and active-set classification are proved in `SwitchMaximum`.
 
 ## Bernoulli facts and randomized tests (section 2)
 
@@ -100,13 +110,13 @@ Additional proved algebra/calculus interfaces:
 | SWTIE | Equal count-j binomial masses give exactly tied maximizing thresholds j,j+1 | SWDEF, LR | `IsSwitch.tailObjective_eq`, `tailObjective_switchPair`, `IsSwitch.activeThresholds_eq` (exactly the two adjacent maximizing thresholds) | PROVED |
 | SWDER | Differentiability of switches a,b; F'_j, f'_j/f_j (`eq:switch-derivatives`) | SWEX, HGRAD | `differentiableAt_switchLower`, `differentiableAt_switchUpper`, `deriv_switchUpper`, `deriv_switchLower`, `hasDerivAt_switchValue`, `deriv_switchMass_div`; genuine implicit-function proof | PROVED |
 | SWINT | Normalized integral identities and integral f_j=1/(n+1) (`eq:switch-normalization`), including endpoint limits | SWDER, SWDEF | `switchValue_eq_integral_mass`, `integral_switchMass`, `intervalIntegrable_switchMass`; closed-interval endpoint cases included | PROVED |
-| RMON | Logit paired-average inequalities; strict c monotonicity (`eq:Rcentering`), bound R'<=2R/gamma and reflection | SWEX, SWDER | — | TODO |
-| SWORDER | Strict switch ordering via log density-ratio derivative, equal integrals, single crossing; reflection F_(n,j)=F_(n,n-j) | RMON, SWINT | — | TODO |
-| HOMMIN | Homogeneous local minima must be switches; strict endpoint exclusion; exact central-switch equality cases | ACTIVE, SWORDER, SWTIE | — | TODO |
-| CONCAVE | Strict concavity of B_n for n>=3 and `eq:strict-linear`, initial slope kappa_n | SWDER, RMON, SWEX | — | TODO |
+| RMON | Logit paired-average inequalities; strict c monotonicity (`eq:Rcentering`), bound R'<=2R/gamma and reflection | SWEX, SWDER | `ContinuousSwitch` proves exact equivalence at c=j/n; `ContinuousSwitchGeometry` proves centering signs; `ContinuousSwitchDerivative` proves IFT count derivative; `SwitchMonotonicity` proves both assertions | PROVED |
+| SWORDER | Strict switch ordering via log density-ratio derivative, equal integrals, single crossing; reflection F_(n,j)=F_(n,n-j) | RMON, SWINT | `switchValue_strict_order`, `switchValue_central_lt`, `switchValue_eq_central_iff`; `integral_endpoint_strict_comparison` replaces explicit crossing existence with equivalent sign cases | PROVED |
+| HOMMIN | Homogeneous local minima must be switches; strict endpoint exclusion; exact central-switch equality cases | ACTIVE, SWORDER, SWTIE | `homogeneous_localMinOn_is_switch` includes both endpoint exclusions; `homogeneous_minimum` and `homogeneous_minimum_eq_iff` give exact comparison and central/reflected equality | PROVED |
+| CONCAVE | Strict concavity of B_n for n>=3 and `eq:strict-linear`, initial slope kappa_n | SWDER, RMON, SWEX | `strictConcaveOn_benchmark` on closed [0,n], `hasDerivWithinAt_benchmark_zero_right`, `benchmark_strict_bounds` | PROVED |
 | EXPLICIT | Odd integral `eq:odd-integral`, unique z representation, even integral formula, n=3 radical formula | SWEX, SWDER, SWINT | — | TODO |
-| RHODENS | rho in (0,1), g(a)=g(b)=f/(1-R) (`eq:rho-density`) | SWDEF | `switchRho`, `IsSwitch.switchRho_mem_Ioo`; density equality remains | IN PROGRESS |
-| DIMMOVE | Appended rho has unique active threshold; feasible gap-preserving perturbation has strictly negative derivative, Delta=N endpoint | RHODENS, APPEND, SWTIE, HGRAD | — | TODO |
+| RHODENS | rho in (0,1), g(a)=g(b)=f/(1-R) (`eq:rho-density`) | SWDEF | `IsSwitch.rhoDensity_eq`, `switchRhoDensity_eq_switchMass`, actual Bernoulli-law equivalence and strict improvement derivative | PROVED |
+| DIMMOVE | Appended rho has unique active threshold; feasible gap-preserving perturbation has strictly negative derivative, Delta=N endpoint | RHODENS, APPEND, SWTIE, HGRAD | `activeThresholds_cons_common`, `IsSwitch.hasDerivAt_dimensionPath`, `switch_dimension_improvement`, `exists_dimension_endpoint_improvement` | PROVED |
 
 ## Global minimizer (section 5)
 
@@ -114,8 +124,8 @@ Additional proved algebra/calculus interfaces:
 |---|---|---|---|---|
 | COMPACT | Existence of minimizer at fixed feasible gap by compactness/continuity | DEF, MAX | `continuous_tailObjective`, `isCompact_feasiblePairs`, `feasiblePairs_nonempty`, `exists_tailObjective_minimizer` | PROVED |
 | REDUCE | >=3 positive gaps; exclude common deterministic coordinates, p identically one and q identically zero | ATOM, CONCAVE, DIM, HOMMIN, BASE2 | — | TODO |
-| KKT | Separating-hyperplane/tangent-cone stationarity for one or two active thresholds; multipliers and endpoint signs (`eq:KKTp`, `eq:KKTq`, `eq:KKTC`) | ACTIVE, COMPACT, HGRAD | — | TODO |
-| CPOS | Positive multiplier c (`eq:c-positive`) from support/gradient ranges, including endpoints | KKT, REDUCE, LC | — | TODO |
+| KKT | Separating-hyperplane/tangent-cone stationarity for one or two active thresholds; multipliers and endpoint signs (`eq:KKTp`, `eq:KKTq`, `eq:KKTC`) | ACTIVE, COMPACT, HGRAD | `exists_tail_kkt`: finite-active-set reduction, Hahn–Banach separation, exact feasible rays, explicit gap transfers, all endpoint signs and nonnegative common-coordinate multipliers | PROVED |
+| CPOS | Positive multiplier c (`eq:c-positive`) from support/gradient ranges, including endpoints | KKT, REDUCE, LC | `deleted_mass_pair_pos`, `randomizedGradient_multiplier_pos`, incorporated in `exists_tail_kkt`; includes boundary parameters and the pure final threshold | PROVED |
 | COMMON | With common coordinates, exclude one active threshold; t=lambda (`eq:commonlambda`); tied common mass f=c+nu>0 (`eq:commonf`) | KKT, CPOS, LR, APPEND, REDUCE | — | TODO |
 | ONECONST | Coefficient signs, strict LR contradiction, pairwise equality implies one changing vector constant (`eq:pa`) | KKT, CPOS, LR, HGRAD, REDUCE | — | TODO |
 | AINTERIOR | Exclude a=1 by path of strict positive derivatives (`eq:a-interior`), c=g_(r-1)(a)>0 (`eq:ca`) | ONECONST, COMMON, LR, CPOS | — | TODO |
@@ -239,8 +249,8 @@ flowchart TD
   real-rootedness claim without proof if it becomes a needed dependency.
 - `SwitchGeometry`: Rolle's theorem puts j/n strictly between b and a;
   exact reflection, normalized denominator and 0<R<1 are proved. The adjoined
-  coordinate `switchRho` is proved strictly interior, but its density equality
-  remains open.
+  coordinate `switchRho` is strictly interior and its exact density equality
+  is proved in `SwitchRhoDensity`.
 
 - `FixedMean` proves a general symmetric-quadratic averaging lemma, then applies
   it to count masses at every feasible real mean. Its secondary objective is
@@ -250,8 +260,8 @@ flowchart TD
   is only needed in the subsequent binomial lower bound, not in this reduction.
 - `SwitchFunctions` clamps outside [0,1] to endpoint values. On the manuscript
   domain its unique-switch specification, gap, reflection, endpoint formulas,
-  and continuous endpoint extensions are proved. Interior smoothness remains
-  a separate obligation in `SwitchDerivative`.
+  and continuous endpoint extensions are proved. Interior smoothness is
+  proved in `SwitchDerivative` using the implicit function theorem.
 
 - `BinomialAtom` factors integer-mean masses using m^m/m!, including m=0,
   then proves the manuscript's log-ratio identities and numerical comparisons.
@@ -278,3 +288,17 @@ flowchart TD
   broader real-rootedness detour for the only mixture class used downstream.
 - `SwitchMaximum` proves exact attainment and the full two-threshold active set;
   it also proves product TV<1 whenever the two laws share a positive atom.
+
+- `ContinuousSwitchGeometry` replaces the logistic paired-average integral
+  argument by additive and odds-reflection comparisons of the same logarithmic
+  height. Exact geometric identities prove the signs used in RMON.
+- Homogeneous endpoint exclusion uses a negative one-sided derivative and
+  reflection rather than an auxiliary coupling. The exact feasible minimum and
+  equality classification are preserved, including both gap endpoints.
+- `ConvexStationarity` separates the two-dimensional gradient image from the
+  negative quadrant. `FeasibleDirections` proves every allowed direction is an
+  actual feasible positive ray. `GapMultiplier` uses explicit unit-gap transfers
+  and a finite maximum, covering cases with no free changing coordinate.
+- `TailKKT.exists_tail_kkt` includes active-threshold support of the randomizing
+  weight and the strictly positive scalar multiplier. No constraint
+  qualification, differentiability of the maximum, or stationarity is assumed.
