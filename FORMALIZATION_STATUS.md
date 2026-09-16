@@ -8,24 +8,31 @@ an edge into its row. Named results are tracked separately from their components
 
 ## Current frontier
 
-- Baseline on main: `7158f355d1fb603ca40846bfc7bd014993a14718`.
-- Active milestone: `formalization/coverage-and-finite-tv`.
+- Baseline on main: `03e179a89309fc52315661661f64dfa4a2be6086`.
+- Active milestone: `formalization/order-and-optimization`.
 - Kernel-checked modules now additionally include `Coordinate`, `Endpoints`,
   `Reflection`, `TotalVariation`, `TotalVariationBounds`, `TwoDimensionalEquality`,
   `LogConcavity`, `Switch`, `Homogeneous`, `HomogeneousDerivative`,
   `RandomizedThreshold`, and `SwitchGeometry`.
 - The complete two-dimensional appendix is proved, including the exact product
   family, its feasibility interval, both endpoints, and strict containment.
-- Current parallel targets: likelihood-ratio order (`LikelihoodRatio.lean`),
-  the adjoining rule (`Adjoining.lean`),
-  and switch functions/endpoint extensions (`SwitchFunctions.lean`). These files are work in progress
-  until explicitly listed as accepted below; they are not imported by the root.
-- Next parent target after validating/merging this milestone: continuity and
-  compact fixed-gap minimizer existence, then adjoining/atom dependencies.
+- Accepted next-layer modules: `LikelihoodRatio`, `ActiveThresholds`, `Adjoining`,
+  `HomogeneousBlock`, `HomogeneousBlockMode`, `SwitchFunctions`, `SwitchDerivative`,
+  `Compactness`, `FixedMean`, `Deterministic`, `BinomialAtom`, `Reindex`,
+  `CommonCoordinate`, `TotalVariationHomogeneous`, `SwitchIntegral`,
+  `MaximalAtom`, `DeletionMixture`, and `SwitchMaximum`.
+- Current parallel targets: homogeneous-minimizer switch classification
+  (`HomogeneousMinimizer.lean`), adjoining rho-density (`SwitchRhoDensity.lean`),
+  and continuous-count switch geometry/monotonicity (`ContinuousSwitch.lean`
+  and subsequent modules). These are not yet accepted/imported.
+- Parent next target after validation: finite-dimensional stationarity foundations;
+  continuous-count ordering/concavity and dimension improvement remain major
+  dependencies before the global minimizer argument.
+- Previous milestone merged as PR #3, squash commit `03e179a89309fc52315661661f64dfa4a2be6086`.
 - No established mathematical blocker. Independent audits of the Bernoulli,
   switch, and global-minimizer prose found none; those audits are not Lean proofs.
-- Milestone validation: `lake build` exits 0, `Build completed successfully (4203 jobs).`
-  All 153 public theorem declarations have only `propext`, `Classical.choice`,
+- Milestone validation: `lake build` exits 0, `Build completed successfully (5561 jobs).`
+  All 389 public theorem declarations have only `propext`, `Classical.choice`,
   and `Quot.sound` dependencies. Source scan finds no proof placeholders or
   project-added axiom declarations.
 
@@ -34,9 +41,9 @@ an edge into its row. Named results are tracked separately from their components
 | ID | Result / TeX label | Dependencies | Lean correspondence | Status |
 |---|---|---|---|---|
 | MAIN | Theorem `thm:main`: inequality, exact minimum, all equality cases, product-TV comparison | GLOBAL, HOMMIN, TVMIN, END, N2 | — | TODO |
-| LR | Increasing a parameter, `lem:lr`, including strict adjacent comparison and support shifts | LC, REC | — | TODO |
-| ATOM | Maximal-atom bound and at-most-two-positive-gaps bound, `lem:atom` / `eq:two-gaps` | INTATOM, PADATOM, DELETEMIX | — | TODO |
-| ADJOIN | Derivative criterion for adjoining, `cor:adjoining` | GM, ADDRULE | — | TODO |
+| LR | Increasing a parameter, `lem:lr`, including strict adjacent comparison and support shifts | LC, REC | `pbMass_likelihoodRatio`, `pbMass_strict_adjacent_likelihoodRatio`, `pbMass_equal_adjacent_increase`, `pbMass_adjacent_disappear`, `pbMass_adjacent_sign_preserved`; adjoining variants in `LikelihoodRatio` | PROVED |
+| ATOM | Maximal-atom bound and at-most-two-positive-gaps bound, `lem:atom` / `eq:two-gaps` | INTATOM, PADATOM, DELETEMIX | `exists_pbMass_ge_kappa` and `two_gap_lower_bound`; exact `kappa_eq_formula` and all deterministic/zero-gap cases | PROVED |
+| ADJOIN | Derivative criterion for adjoining, `cor:adjoining` | GM, ADDRULE | `homogeneousBlockMass_adjacent_le_of_deriv_nonpos`, `homogeneousBlockMass_union_le_of_deriv_nonpos`; subset-law equivalence `homogeneousBlockMass_eq_union` | PROVED |
 | SWITCH | Switch identities, `lem:switch-identities` | SWEX, SWDER, SWINT, RMON | — | TODO |
 | ORDER | Strict ordering of switches, homogeneous minimizers, strict concavity/bounds, `prop:switch-order` | SWORDER, HOMMIN, CONCAVE | — | TODO |
 | DIM | Strict dimension improvement, `lem:dimension` | RHODENS, APPEND, HOMMIN | — | TODO |
@@ -55,7 +62,7 @@ an edge into its row. Named results are tracked separately from their components
 | TVDEF | Algebraic product total variation, half sum of absolute signed outcome weights | DEF | `productTV`, `productTV_nonneg`, `productTV_self`, `productTV_symm`, `productTV_le_one` | PROVED |
 | TVEVENT | Every event difference, in particular every D_k, is bounded by product TV | TVDEF, NORM | `eventDiff_le_productTV`, `tailDiff_le_productTV`, `tailObjective_le_productTV` | PROVED |
 | REFLECT | Reflection (p,q) -> (1-q,1-p), preservation of gap and objective, threshold h -> n-h+1 | DEF, NORM | `bernoulliWeight_complement`, `pbMass_complement`, `pbTail_complement`, `meanGap_reflection`, `admissiblePair_reflection`, `tailDiff_reflection_of_mem`, `tailObjective_reflection` | PROVED |
-| APPEND | Adjoining a common Bernoulli gives convex combinations of adjacent tail differences; common deterministic deletion | REC | — | TODO |
+| APPEND | Adjoining a common Bernoulli gives convex combinations of adjacent tail differences; common deterministic deletion | REC | `tailDiff_cons_common`, `meanGap_cons_common`, `tailObjective_cons_common_le`, `tailObjective_cons_zero`, `tailObjective_cons_one`; `Reindex` preserves arbitrary finite coordinate labeling | PROVED |
 | END | Delta=0 forces p=q; Delta=n forces p=1,q=0; endpoint values and equality classifications | DEF, NORM, TVDEF | `meanGap_eq_zero_iff`, `meanGap_eq_dimension_iff`, objective endpoint theorems in `Endpoints` and `TotalVariationBounds` | PROVED |
 
 Additional proved algebra/calculus interfaces:
@@ -75,24 +82,24 @@ Additional proved algebra/calculus interfaces:
 | ID | Content / label | Dependencies | Lean correspondence | Status |
 |---|---|---|---|---|
 | LC | Interval support, strict log-concavity at positive interior triples, generating polynomial, Newton inequality; deterministic shifts | DEF, REC | `pbMassIntOn_cross`, `pbMassIntOn_strictLogConcavity`, `pbMass_logConcave`, `pbMass_strictLogConcave`, `pbMass_positive_between`; convolution proof replaces Newton argument | PROVED |
-| ACTIVE | If Delta>0 and T<1, maximizing thresholds are one or two adjacent thresholds | LR, NORM | — | TODO |
+| ACTIVE | If Delta>0 and T<1, maximizing thresholds are one or two adjacent thresholds | LR, NORM | `activeThresholds_singleton_or_adjacent` (includes all support degeneracies) | PROVED |
 | HDEF | Randomized adjacent-threshold test H and extra Bernoulli representation | REC | `randomizedTail`, `randomizedTailOn_eq_adjoin` | PROVED |
 | HGRAD | Gradient, mixed coefficient and gradient-difference formulas (`eq:gradient`, `eq:coefficient`, `eq:grad-difference`); exact equal-coordinate split | HDEF, REC | `randomizedTail_update_sub`, `randomizedSlopeOn_eq_adjoin`, `randomizedCoefficientOn_eq_adjoin`, `randomizedGradient_sub`, `randomizedTail_split`; exact affine/quadratic identities replace differentiation | PROVED |
-| INTATOM | Fixed-integer-mean mass minimization by equal interior parameters; deterministic shifts; binomial mass ratios and monotonicity of x log(1+1/x) | LC, HGRAD | — | TODO |
-| PADATOM | Pad (n-1) trials to integer mean to obtain maximal-atom bound | INTATOM, REC | — | TODO |
-| DELETEMIX | At most two gaps: symmetric expansion and normalized deletion mixture; real negative roots and degeneracy limits | DEF, REC | — | TODO |
-| GM | g_M formula `eq:gM`, derivative, fixed support, unimodality, strict maximum M>=2, affine M=1 case | REC, LR, LC | — | TODO |
-| ADDRULE | Adjoining rule with positive target mass; strictness after two positive additions | LC, REC, LR | — | TODO |
+| INTATOM | Fixed-integer-mean mass minimization by equal interior parameters; deterministic shifts; binomial mass ratios and monotonicity of x log(1+1/x) | LC, HGRAD | `kappa_le_pbMass_at_integer_mean`, with fixed-mean averaging, deterministic decomposition, and both binomial log comparisons proved in supporting modules | PROVED |
+| PADATOM | Pad (n-1) trials to integer mean to obtain maximal-atom bound | INTATOM, REC | `exists_pbMass_ge_kappa_succ`, `exists_pbMass_ge_kappa`, `exists_pbMassOn_ge_kappa_succ`; explicit integer-completion parameter and support bounds | PROVED |
+| DELETEMIX | At most two gaps: symmetric expansion and normalized deletion mixture; real negative roots and degeneracy limits | DEF, REC | `tailDiff_eq_midpoint_deletion_sum`, `tailDiff_div_meanGap_eq_deletionMixture`, `deletionMixture_is_bernoulli_of_two_gaps`; direct two-factor proof replaces general root argument | PROVED |
+| GM | g_M formula `eq:gM`, derivative, fixed support, unimodality, strict maximum M>=2, affine M=1 case | REC, LR, LC | `homogeneousBlockMass`, `homogeneousBlockMass_eq_union`, derivative formulas in `HomogeneousBlock`; support, derivative sign, closed-interval maximality, strictness and unique mode in `HomogeneousBlockMode` | PROVED |
+| ADDRULE | Adjoining rule with positive target mass; strictness after two positive additions | LC, REC, LR | `pbMassIntOn_union_le_of_adjacent`, `pbMassIntOn_union_lt_of_two_positive_of_tie`, zero-below/no-recreation theorems in `Adjoining` | PROVED |
 
 ## Homogeneous switches and dimension improvement (sections 3–4)
 
 | ID | Content / label | Dependencies | Lean correspondence | Status |
 |---|---|---|---|---|
-| SWEX | Existence and uniqueness of a,b at given n,j,gamma (`eq:switch`), with b<j/n<a; continuous endpoint extension | elementary polynomial/log calculus | `IsSwitch`, `exists_switch`, `switch_unique`, `existsUnique_switch`, `IsSwitch.center_bounds`; continuous endpoint extension remains | IN PROGRESS |
-| SWDEF | F_(n,j), central benchmark B_n and endpoints; f_j, c,v,x,y,R; denominator `eq:Rden` | SWEX, DEF | — | TODO |
-| SWTIE | Equal count-j binomial masses give exactly tied maximizing thresholds j,j+1 | SWDEF, LR | — | TODO |
-| SWDER | Differentiability of switches a,b; F'_j, f'_j/f_j (`eq:switch-derivatives`) | SWEX, HGRAD | — | TODO |
-| SWINT | Normalized integral identities and integral f_j=1/(n+1) (`eq:switch-normalization`), including endpoint limits | SWDER, SWDEF | — | TODO |
+| SWEX | Existence and uniqueness of a,b at given n,j,gamma (`eq:switch`), with b<j/n<a; continuous endpoint extension | elementary polynomial/log calculus | `exists_switch`, `switch_unique`, `existsUnique_switch`, `IsSwitch.center_bounds`; endpoint continuity of upper/lower/value/mass in `SwitchFunctions` | PROVED |
+| SWDEF | F_(n,j), central benchmark B_n and endpoints; f_j, c,v,x,y,R; denominator `eq:Rden` | SWEX, DEF | `switchPair`, `switchUpper`, `switchLower`, `switchValue`, `switchMass`, `benchmark`; denominator identities in `SwitchGeometry`; canonical specs and endpoint/reflection formulas in `SwitchFunctions` | PROVED |
+| SWTIE | Equal count-j binomial masses give exactly tied maximizing thresholds j,j+1 | SWDEF, LR | `IsSwitch.tailObjective_eq`, `tailObjective_switchPair`, `IsSwitch.activeThresholds_eq` (exactly the two adjacent maximizing thresholds) | PROVED |
+| SWDER | Differentiability of switches a,b; F'_j, f'_j/f_j (`eq:switch-derivatives`) | SWEX, HGRAD | `differentiableAt_switchLower`, `differentiableAt_switchUpper`, `deriv_switchUpper`, `deriv_switchLower`, `hasDerivAt_switchValue`, `deriv_switchMass_div`; genuine implicit-function proof | PROVED |
+| SWINT | Normalized integral identities and integral f_j=1/(n+1) (`eq:switch-normalization`), including endpoint limits | SWDER, SWDEF | `switchValue_eq_integral_mass`, `integral_switchMass`, `intervalIntegrable_switchMass`; closed-interval endpoint cases included | PROVED |
 | RMON | Logit paired-average inequalities; strict c monotonicity (`eq:Rcentering`), bound R'<=2R/gamma and reflection | SWEX, SWDER | — | TODO |
 | SWORDER | Strict switch ordering via log density-ratio derivative, equal integrals, single crossing; reflection F_(n,j)=F_(n,n-j) | RMON, SWINT | — | TODO |
 | HOMMIN | Homogeneous local minima must be switches; strict endpoint exclusion; exact central-switch equality cases | ACTIVE, SWORDER, SWTIE | — | TODO |
@@ -105,7 +112,7 @@ Additional proved algebra/calculus interfaces:
 
 | ID | Content / label | Dependencies | Lean correspondence | Status |
 |---|---|---|---|---|
-| COMPACT | Existence of minimizer at fixed feasible gap by compactness/continuity | DEF, MAX | — | TODO |
+| COMPACT | Existence of minimizer at fixed feasible gap by compactness/continuity | DEF, MAX | `continuous_tailObjective`, `isCompact_feasiblePairs`, `feasiblePairs_nonempty`, `exists_tailObjective_minimizer` | PROVED |
 | REDUCE | >=3 positive gaps; exclude common deterministic coordinates, p identically one and q identically zero | ATOM, CONCAVE, DIM, HOMMIN, BASE2 | — | TODO |
 | KKT | Separating-hyperplane/tangent-cone stationarity for one or two active thresholds; multipliers and endpoint signs (`eq:KKTp`, `eq:KKTq`, `eq:KKTC`) | ACTIVE, COMPACT, HGRAD | — | TODO |
 | CPOS | Positive multiplier c (`eq:c-positive`) from support/gradient ranges, including endpoints | KKT, REDUCE, LC | — | TODO |
@@ -124,7 +131,7 @@ Additional proved algebra/calculus interfaces:
 
 | ID | Content / label | Dependencies | Lean correspondence | Status |
 |---|---|---|---|---|
-| TVHOM | Homogeneous product likelihood ratio is count-only and increasing, so product TV equals maximal count-tail difference | TVDEF, LR, SWTIE | — | TODO |
+| TVHOM | Homogeneous product likelihood ratio is count-only and increasing, so product TV equals maximal count-tail difference | TVDEF, LR, SWTIE | `productTV_const_eq_tailObjective` including all endpoints and n=0; stronger `countTV_eq_tailObjective` for every admissible pair | PROVED |
 | TVMIN | Exact product-TV minimum and all equality cases n>=3 | TVEVENT, TVHOM, GLOBAL | — | TODO |
 | N2TAIL | T=Delta/2+abs(A-Delta/2) (`eq:n2-tail`); equality iff A=Delta/2 | BASE2 | `tailObjective_two_eq_abs`, `tailObjective_two_eq_half_iff` | PROVED |
 | N2TV | Four signed atom differences and TV formula (`eq:n2-product`), 0<=A<=Delta | TVDEF, DEF | `twoTopGap_bounds`, `productTV_two_eq_abs` (four-atom expansion proved in private helper) | PROVED |
@@ -234,3 +241,40 @@ flowchart TD
   exact reflection, normalized denominator and 0<R<1 are proved. The adjoined
   coordinate `switchRho` is proved strictly interior, but its density equality
   remains open.
+
+- `FixedMean` proves a general symmetric-quadratic averaging lemma, then applies
+  it to count masses at every feasible real mean. Its secondary objective is
+  `squareSum`. The exact finite update formula proves all pair transfers stay
+  feasible; averaging and spreading force the mixed coefficient to vanish,
+  after which averaging strictly reduces the secondary objective. Integer mean
+  is only needed in the subsequent binomial lower bound, not in this reduction.
+- `SwitchFunctions` clamps outside [0,1] to endpoint values. On the manuscript
+  domain its unique-switch specification, gap, reflection, endpoint formulas,
+  and continuous endpoint extensions are proved. Interior smoothness remains
+  a separate obligation in `SwitchDerivative`.
+
+- `BinomialAtom` factors integer-mean masses using m^m/m!, including m=0,
+  then proves the manuscript's log-ratio identities and numerical comparisons.
+  `kappa_eq_formula` proves agreement with the floor/ceiling formula for n>0.
+- `Deterministic` identifies both mean and entire integer-indexed law of an
+  equal-interior vector as a deterministic shift plus a binomial; the resulting
+  integer-mean comparison preserves dimensions and all deterministic cases.
+- `Reindex.finsetParameters` enumerates arbitrary finite coordinate sets with
+  exactly their cardinality; mass, tail, validity and mean equivalences are proved.
+- `HomogeneousBlockMode` proves strict maximality even against both endpoints.
+  `TotalVariationHomogeneous` proves a stronger intermediate count-TV identity
+  for every ordered pair, then exact product-TV equality for homogeneous pairs.
+- `SwitchDerivative` uses mathlib's actual implicit function theorem to establish
+  differentiability before differentiating the switch equations. No regularity
+  premise is assumed. It proves both derivative identities and closed-interval
+  continuity needed for integration.
+
+- `MaximalAtom` completes the fixed-mean reduction and pads an arbitrary law to
+  integer mean with t=floor(mean)+1-mean. The positive kappa bound ensures the
+  selected original mass lies inside its support range.
+- `DeletionMixture` proves the entire at-most-two-gap estimate by exact midpoint
+  expansion and a direct one-Bernoulli mixture. The realization is literally on
+  `Fin (n-1)` via the proved reindexing interface. This replaces the manuscript's
+  broader real-rootedness detour for the only mixture class used downstream.
+- `SwitchMaximum` proves exact attainment and the full two-threshold active set;
+  it also proves product TV<1 whenever the two laws share a positive atom.
